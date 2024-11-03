@@ -18,12 +18,11 @@ global with sharing class CheckOrderDeliveryDateBatch implements Database.Batcha
         //Cria uma lista que armazenará os e-mails que vão ser disparados
         List<Messaging.SingleEmailMessage> emailMessageList = new List<Messaging.SingleEmailMessage>();
 
-        //Criando instâncias de custom settins que armazenam paramêtros que serão utilizado para criar e-mails
+        //Criando instâncias de configurações personalizadas que armazenam parâmetros a serem utilizados na geração de e-mails.
         OrderEmailNotification__c deliveredOrderSettings = OrderEmailNotification__c.getValues('DeliveredOrder');
         OrderEmailNotification__c undeliveredOrderSettings = OrderEmailNotification__c.getValues('UndeliveredOrder'); 
 
-        //Checa se o pedido foi entregue, gerando um e-mail caso tenha sido entregue ou uma notificação se não tiver sido
-
+        //Verifica o status de entrega do pedido. Caso o pedido tenha sido entregue, gere um e-mail informando a entrega. Se o pedido não tiver sido entregue, emita uma notificação.
         for(Order order : scope){
             if(order.OrderDelivered__c){
                 emailMessageList.add(generateEmailMessage(
@@ -47,7 +46,7 @@ global with sharing class CheckOrderDeliveryDateBatch implements Database.Batcha
         update scope;
     }
 
-    //Metódo que gera os e-mails
+    //Metódo utilizado para gerar e-mails
     global Messaging.SingleEmailMessage generateEmailMessage(List<String> toAdress, String subject, String body){
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setToAddresses(toAdress);
