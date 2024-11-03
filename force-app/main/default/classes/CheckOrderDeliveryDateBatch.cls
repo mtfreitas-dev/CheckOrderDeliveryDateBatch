@@ -1,6 +1,8 @@
 global with sharing class CheckOrderDeliveryDateBatch implements Database.Batchable<SObject>{
     global CheckOrderDeliveryDateBatch() {}
 
+    //Faz a pesquisa retornando uma lista de order onde a data de entrega do pedido seja o dia da execução da batch
+
     global Database.QueryLocator start(Database.BatchableContext BC){
         Date todayDate = Date.today();
 
@@ -10,10 +12,17 @@ global with sharing class CheckOrderDeliveryDateBatch implements Database.Batcha
         return Database.getQueryLocator(query);
     }
 
+    
     global void execute(Database.BatchableContext BC, List<Order> scope){
+        
+        //Cria uma lista que armazenará os e-mails que vão ser disparados
         List<Messaging.SingleEmailMessage> emailMessageList = new List<Messaging.SingleEmailMessage>();
+
+        //Criando instâncias de custom settins que armazenam paramêtros que serão utilizado para criar e-mails
         OrderEmailNotification__c deliveredOrderSettings = OrderEmailNotification__c.getValues('DeliveredOrder');
         OrderEmailNotification__c undeliveredOrderSettings = OrderEmailNotification__c.getValues('UndeliveredOrder'); 
+
+        //Checa se o pedido foi entregue, gerando um e-mail caso tenha sido entregue ou uma notificação se não tiver sido
 
         for(Order order : scope){
             if(order.OrderDelivered__c){
@@ -38,6 +47,7 @@ global with sharing class CheckOrderDeliveryDateBatch implements Database.Batcha
         update scope;
     }
 
+    //Metódo que gera os e-mails
     global Messaging.SingleEmailMessage generateEmailMessage(List<String> toAdress, String subject, String body){
         Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
         mail.setToAddresses(toAdress);
@@ -47,6 +57,7 @@ global with sharing class CheckOrderDeliveryDateBatch implements Database.Batcha
         return mail;
     }
 
+    //Envia uma notificação aos colaboradores da empresa referente ao pedido 
     global void finish (Database.BatchableContext context){
         OrderEmailNotification__c emailNotificationSettings = OrderEmailNotification__c.getValues('EmailNotification');
 
